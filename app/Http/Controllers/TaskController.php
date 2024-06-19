@@ -5,21 +5,24 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Services\TaskServiceInterface;
+use App\Services\CategoryServiceInterface;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     protected $taskService;
+    protected $categoryService;
 
-    public function __construct(TaskServiceInterface $taskService)
+    public function __construct(TaskServiceInterface $taskService, CategoryServiceInterface $categoryService)
     {
         $this->taskService = $taskService;
+        $this->categoryService = $categoryService;
     }
 
     public function index(Request $request)
     {
-        $categories = Category::all();
         $user = Auth::user();
+        $categories = $this->categoryService->getAllCategories($user);
         $tasks = $this->taskService->getAllTasks($request, $user);
 
         return view('tasks.index', compact('tasks', 'categories'));
@@ -27,7 +30,9 @@ class TaskController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
+        $user = Auth::user();
+        $categories = $this->categoryService->getAllCategories($user);
+
         return view('tasks.create', compact('categories'));
     }
 
@@ -48,24 +53,20 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
-    public function show($id)
+    public function show(Task $task)
     {
-        $user = Auth::user();
-        $task = $this->taskService->findById($id, $user);
-
         return view('tasks.show', compact('task'));
     }
 
-    public function edit($id)
+    public function edit(Task $task)
     {
         $user = Auth::user();
-        $task = $this->taskService->findById($id, $user);
-        $categories = Category::all();
+        $categories = $this->categoryService->getAllCategories($user);
 
         return view('tasks.edit', compact('task', 'categories'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Task $task)
     {
         $request->validate([
             'title' => 'required',
@@ -77,16 +78,14 @@ class TaskController extends Controller
         ]);
 
         $user = Auth::user();
-        $task = $this->taskService->findById($id, $user);
         $this->taskService->updateTask($request, $task, $user);
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Task $task)
     {
         $user = Auth::user();
-        $task = $this->taskService->findById($id, $user);
         $this->taskService->deleteTask($task, $user);
 
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
