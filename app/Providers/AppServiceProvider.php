@@ -11,6 +11,8 @@ use App\Services\CategoryService;
 use App\Repositories\CategoryRepositoryInterface;
 use App\Repositories\CategoryRepository;
 use App\Services\ProfileServiceInterface;
+use App\Repositories\ProfileRepositoryInterface;
+use App\Repositories\ProfileRepository;
 use App\Services\ProfileService;
 use Laravel\Passport\Passport;
 
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
+        $this->app->bind(ProfileRepositoryInterface::class, ProfileRepository::class);
     }
 
     public function boot()

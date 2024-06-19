@@ -3,40 +3,29 @@ namespace App\Services;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Repositories\ProfileRepositoryInterface;
 
 class ProfileService implements ProfileServiceInterface
 {
+    protected $profileRepository;
+
+    public function __construct(ProfileRepositoryInterface $profileRepository)
+    {
+        $this->profileRepository = $profileRepository;
+    }
+
     public function getUser(Request $request)
     {
-        return $request->user();
+        return $this->profileRepository->getUser($request);
     }
 
     public function updateUser(ProfileUpdateRequest $request)
     {
-        $user = $request->user();
-        $user->fill($request->validated());
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        return $this->profileRepository->updateUser($request);
     }
 
     public function deleteUser(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        return $this->profileRepository->deleteUser($request);
     }
 }
