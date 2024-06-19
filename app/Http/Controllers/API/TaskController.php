@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Services\TaskServiceInterface;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -17,33 +18,38 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $tasks = $this->taskService->getAllTasks($request);
+        $user = Auth::user();
+        $tasks = $this->taskService->getAllTasks($request, $user);
         return response()->json($tasks);
     }
 
     public function store(Request $request)
     {
-        $task = $this->taskService->storeTask($request);
+        $user = Auth::user();
+        $task = $this->taskService->storeTask($request, $user);
         return response()->json($task, 201);
     }
 
     public function show($id)
     {
-        $task = $this->taskService->findById($id);
+        $user = Auth::user();
+        $task = $this->taskService->findById($id, $user);
         return response()->json($task);
     }
 
     public function update(Request $request, $id)
     {
-        $task = Task::findOrFail($id);
-        $this->taskService->updateTask($request, $task);
+        $user = Auth::user();
+        $task = Task::where('id', $id)->where('user_id', $user->id)->firstOrFail();
+        $this->taskService->updateTask($request, $task, $user);
         return response()->json($task);
     }
 
     public function destroy($id)
     {
-        $task = Task::findOrFail($id);
-        $this->taskService->deleteTask($task);
+        $user = Auth::user();
+        $task = Task::where('id', $id)->where('user_id', $user->id)->firstOrFail();
+        $this->taskService->deleteTask($task, $user);
         return response()->json(null, 204);
     }
 }
