@@ -4,10 +4,11 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use App\Services\TaskServiceInterface;
+use App\Repositories\TaskRepositoryInterface;
 use App\Models\Task;
 use App\Models\Category;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Mockery;
 
 class TaskServiceTest extends TestCase
@@ -21,22 +22,24 @@ class TaskServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->taskRepositoryMock = Mockery::mock(\App\Repositories\TaskRepositoryInterface::class);
+        $this->taskRepositoryMock = Mockery::mock(TaskRepositoryInterface::class);
 
-        $this->app->instance(\App\Repositories\TaskRepositoryInterface::class, $this->taskRepositoryMock);
+        $this->app->instance(TaskRepositoryInterface::class, $this->taskRepositoryMock);
 
         $this->taskService = $this->app->make(TaskServiceInterface::class);
     }
 
     public function testGetAllTasks()
     {
+        $user = User::factory()->create();
         $this->taskRepositoryMock
-            ->shouldReceive('getAll')
+            ->shouldReceive('getAllForUser')
             ->once()
+            ->with(Mockery::type(Request::class), $user)
             ->andReturn(collect([]));
 
         $request = new Request();
-        $tasks = $this->taskService->getAllTasks($request);
+        $tasks = $this->taskService->getAllTasks($request, $user);
 
         $this->assertCount(0, $tasks);
     }
@@ -44,10 +47,9 @@ class TaskServiceTest extends TestCase
     public function testStoreTask()
     {
         $user = User::factory()->create();
-
         $this->actingAs($user);
 
-        $category = Category::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id]);
 
         $request = new Request([
             'title' => 'Test Task',
@@ -59,6 +61,7 @@ class TaskServiceTest extends TestCase
         ]);
 
         $taskData = $request->only(['title', 'description', 'due_date', 'status', 'priority', 'category_id']);
+        $taskData['user_id'] = $user->id;
 
         $this->taskRepositoryMock
             ->shouldReceive('create')
@@ -66,25 +69,27 @@ class TaskServiceTest extends TestCase
             ->with($taskData)
             ->andReturn((new Task)->forceFill($taskData));
 
-        $task = $this->taskService->storeTask($request);
+        $task = $this->taskService->storeTask($request, $user);
 
         $this->assertInstanceOf(Task::class, $task);
         $this->assertEquals('Test Task', $task->title);
-
-        $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
 
     public function testUpdateTask()
     {
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id]);
         $task = Task::factory()->create([
             'title' => 'Old Task Title',
+            'user_id' => $user->id,
+            'category_id' => $category->id,
         ]);
 
         $request = new Request([
             'title' => 'Updated Task Title',
         ]);
 
-        $taskData = $request->only(['title', 'description', 'due_date', 'status', 'priority', 'category_id']);
+        $taskData = $request->only(['title']);
 
         $this->taskRepositoryMock
             ->shouldReceive('update')
@@ -95,14 +100,16 @@ class TaskServiceTest extends TestCase
                 return $task;
             });
 
-        $this->taskService->updateTask($request, $task);
+        $this->taskService->updateTask($request, $task, $user);
 
         $this->assertEquals('Updated Task Title', $task->title);
     }
 
     public function testDeleteTask()
     {
-        $task = Task::factory()->create();
+        $user = User::factory()->create();
+        $category = Category::factory()->create(['user_id' => $user->id]);
+        $task = Task::factory()->create(['user_id' => $user->id, 'category_id' => $category->id]);
 
         $this->taskRepositoryMock
             ->shouldReceive('delete')
@@ -113,7 +120,7 @@ class TaskServiceTest extends TestCase
                 return true;
             });
 
-        $this->taskService->deleteTask($task);
+        $this->taskService->deleteTask($task, $user);
 
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }

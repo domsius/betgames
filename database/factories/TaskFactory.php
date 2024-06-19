@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
 
 class TaskFactory extends Factory
 {
@@ -12,6 +13,7 @@ class TaskFactory extends Factory
     public function definition()
     {
         return [
+            'user_id' => User::factory(),
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
             'due_date' => $this->faker->dateTimeBetween('now', '+1 year'),
