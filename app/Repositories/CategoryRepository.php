@@ -2,32 +2,29 @@
 namespace App\Repositories;
 
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Models\User;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
-    public function getAll()
+    public function getAllForUser(User $user)
     {
-        return Category::latest()->get();
-    }
-
-    public function findById($id)
-    {
-        return Category::findOrFail($id);
+        return Category::where('user_id', $user->id)->get();
     }
 
     public function create(array $data)
     {
+
         return Category::create($data);
     }
 
     public function update(Category $category, array $data)
     {
         $category->update($data);
+        return $category;
     }
 
     public function delete(Category $category)
     {
-        $category->delete();
+        return $category->delete();
     }
 }

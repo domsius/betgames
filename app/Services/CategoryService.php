@@ -1,9 +1,10 @@
 <?php
 namespace App\Services;
 
+use App\Models\Category;
 use App\Repositories\CategoryRepositoryInterface;
 use Illuminate\Http\Request;
-use App\Models\Category;
+use App\Models\User;
 
 class CategoryService implements CategoryServiceInterface
 {
@@ -14,31 +15,35 @@ class CategoryService implements CategoryServiceInterface
         $this->categoryRepository = $categoryRepository;
     }
 
-    public function getAllCategories()
+    public function getAllCategories(User $user)
     {
-        return $this->categoryRepository->getAll();
+        return $this->categoryRepository->getAllForUser($user);
     }
 
-    public function storeCategory(Request $request)
+    public function storeCategory(Request $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|unique:categories|max:255',
-        ]);
+        $categoryData = $request->only(['name']);
+        $categoryData['user_id'] = $user->id;
 
-        return $this->categoryRepository->create($request->all());
+        return $this->categoryRepository->create($categoryData);
     }
 
-    public function updateCategory(Request $request, Category $category)
+    public function updateCategory(Request $request, Category $category, User $user)
     {
-        $request->validate([
-            'name' => 'required|max:255|unique:categories,name,' . $category->id,
-        ]);
+        if ($category->user_id !== $user->id) {
+            throw new \Exception("Unauthorized");
+        }
 
-        $this->categoryRepository->update($category, $request->all());
+        $categoryData = $request->only(['name']);
+        return $this->categoryRepository->update($category, $categoryData);
     }
 
-    public function deleteCategory(Category $category)
+    public function deleteCategory(Category $category, User $user)
     {
-        $this->categoryRepository->delete($category);
+        if ($category->user_id !== $user->id) {
+            throw new \Exception("Unauthorized");
+        }
+
+        return $this->categoryRepository->delete($category);
     }
 }
