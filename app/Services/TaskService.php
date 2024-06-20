@@ -34,11 +34,11 @@ class TaskService implements TaskServiceInterface
     {
         $taskData = $request->only(['title', 'description', 'due_date', 'status', 'priority']);
         $taskData['user_id'] = $user->id;
-
+    
         if ($request->has('category_id')) {
             $taskData['category_id'] = $request->input('category_id');
         }
-
+    
         return $this->taskRepository->create($taskData);
     }
 
