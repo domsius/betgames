@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md mx-auto p-5 mt-4 rounded-lg">
+<div class="py-12 max-w-md mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-2xl font-bold mb-5 text-center">Edit Task</h2>
         <form action="{{ route('tasks.update', $task->id) }}" method="POST">
             @csrf
