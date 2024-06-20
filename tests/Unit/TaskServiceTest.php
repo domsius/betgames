@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Unit;
 
 use Tests\TestCase;
@@ -7,8 +8,8 @@ use App\Services\TaskServiceInterface;
 use App\Repositories\TaskRepositoryInterface;
 use App\Models\Task;
 use App\Models\Category;
-use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Mockery;
 
 class TaskServiceTest extends TestCase
@@ -29,9 +30,28 @@ class TaskServiceTest extends TestCase
         $this->taskService = $this->app->make(TaskServiceInterface::class);
     }
 
-    public function testGetAllTasks()
+    public function testGetAllTasksWithTasks()
     {
         $user = User::factory()->create();
+        $tasks = Task::factory()->count(3)->create(['user_id' => $user->id]);
+
+        $this->taskRepositoryMock
+            ->shouldReceive('getAllForUser')
+            ->once()
+            ->with(Mockery::type(Request::class), $user)
+            ->andReturn($tasks);
+
+        $request = new Request();
+        $result = $this->taskService->getAllTasks($request, $user);
+
+        $this->assertCount(3, $result);
+        $this->assertEquals($tasks->pluck('id'), $result->pluck('id'));
+    }
+
+    public function testGetAllTasksWithoutTasks()
+    {
+        $user = User::factory()->create();
+
         $this->taskRepositoryMock
             ->shouldReceive('getAllForUser')
             ->once()
@@ -39,25 +59,25 @@ class TaskServiceTest extends TestCase
             ->andReturn(collect([]));
 
         $request = new Request();
-        $tasks = $this->taskService->getAllTasks($request, $user);
+        $result = $this->taskService->getAllTasks($request, $user);
 
-        $this->assertCount(0, $tasks);
+        $this->assertCount(0, $result);
     }
 
     public function testStoreTask()
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
-
         $category = Category::factory()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user);
 
         $request = new Request([
             'title' => 'Test Task',
             'description' => 'Task description',
             'due_date' => now()->addWeek(),
             'status' => 'pending',
-            'category_id' => $category->id,
             'priority' => 1,
+            'category_id' => $category->id,
         ]);
 
         $taskData = $request->only(['title', 'description', 'due_date', 'status', 'priority', 'category_id']);
@@ -73,23 +93,24 @@ class TaskServiceTest extends TestCase
 
         $this->assertInstanceOf(Task::class, $task);
         $this->assertEquals('Test Task', $task->title);
+        $this->assertEquals($category->id, $task->category_id);
+
+        $this->assertDatabaseHas('tasks', ['title' => 'Test Task', 'category_id' => $category->id]);
     }
 
     public function testUpdateTask()
     {
         $user = User::factory()->create();
-        $category = Category::factory()->create(['user_id' => $user->id]);
         $task = Task::factory()->create([
             'title' => 'Old Task Title',
             'user_id' => $user->id,
-            'category_id' => $category->id,
         ]);
 
         $request = new Request([
             'title' => 'Updated Task Title',
         ]);
 
-        $taskData = $request->only(['title']);
+        $taskData = $request->all();
 
         $this->taskRepositoryMock
             ->shouldReceive('update')
@@ -108,8 +129,7 @@ class TaskServiceTest extends TestCase
     public function testDeleteTask()
     {
         $user = User::factory()->create();
-        $category = Category::factory()->create(['user_id' => $user->id]);
-        $task = Task::factory()->create(['user_id' => $user->id, 'category_id' => $category->id]);
+        $task = Task::factory()->create(['user_id' => $user->id]);
 
         $this->taskRepositoryMock
             ->shouldReceive('delete')
@@ -123,6 +143,67 @@ class TaskServiceTest extends TestCase
         $this->taskService->deleteTask($task, $user);
 
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    }
+
+    public function testFindByIdAuthorized()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create(['user_id' => $user->id]);
+
+        $this->taskRepositoryMock
+            ->shouldReceive('findById')
+            ->once()
+            ->with($task->id)
+            ->andReturn($task);
+
+        $result = $this->taskService->findById($task->id, $user);
+
+        $this->assertInstanceOf(Task::class, $result);
+        $this->assertEquals($task->id, $result->id);
+    }
+
+    public function testUnauthorizedFindById()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create(['user_id' => $otherUser->id]);
+
+        $this->taskRepositoryMock
+            ->shouldReceive('findById')
+            ->once()
+            ->with($task->id)
+            ->andReturn($task);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Unauthorized");
+
+        $this->taskService->findById($task->id, $user);
+    }
+
+    public function testUnauthorizedUpdateTask()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create(['user_id' => $otherUser->id]);
+
+        $request = new Request(['title' => 'Updated Task Title']);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Unauthorized");
+
+        $this->taskService->updateTask($request, $task, $user);
+    }
+
+    public function testUnauthorizedDeleteTask()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create(['user_id' => $otherUser->id]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Unauthorized");
+
+        $this->taskService->deleteTask($task, $user);
     }
 
     protected function tearDown(): void
