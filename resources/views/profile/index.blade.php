@@ -6,7 +6,6 @@
         <div class="bg-white p-6 rounded-lg shadow-md">
             <div class="px-4 sm:px-0">
                 <h3 class="text-base font-semibold leading-7 text-gray-900">{{ __('Profile Information') }}</h3>
-                <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">{{ __('Personal details and application.') }}</p>
             </div>
             <div class="mt-6 border-t border-gray-100">
                 <dl class="divide-y divide-gray-100">
