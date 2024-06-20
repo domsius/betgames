@@ -32,7 +32,10 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-4">
+            <a href="{{ route('register') }}" class="underline text-sm text-gray-600 hover:text-gray-900">
+                {{ __('Register') }}
+            </a>
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>

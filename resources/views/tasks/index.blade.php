@@ -6,7 +6,6 @@
         <div class="sm:flex sm:items-center justify-between">
             <div class="sm:flex-auto">
                 <h1 class="text-2xl font-bold leading-6 text-gray-900">Tasks</h1>
-                <p class="mt-2 text-sm text-gray-700">A list of all the tasks including their details.</p>
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                 <a href="{{ route('tasks.create') }}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Create Task</a>
@@ -15,7 +14,7 @@
     
         <div class="mt-8">
             <form action="{{ route('tasks.index') }}" method="GET">
-                <div class="flex flex-wrap items-center">
+                <div class="flex flex-wrap items-end">
                     <div class="w-full sm:w-auto mb-3 sm:mb-0">
                         <label for="status" class="block text-sm font-medium text-gray-700">Status:</label>
                         <select name="status" id="status" class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
