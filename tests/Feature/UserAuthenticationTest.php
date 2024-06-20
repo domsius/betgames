@@ -24,7 +24,7 @@ class UserAuthenticationTest extends TestCase
         ]);
 
         $response->assertStatus(302);
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/tasks');
         $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
         $this->assertAuthenticated();
     }
@@ -48,7 +48,7 @@ class UserAuthenticationTest extends TestCase
         ]);
 
         $response->assertStatus(302);
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/tasks');
         $this->assertAuthenticatedAs($user);
     }
 

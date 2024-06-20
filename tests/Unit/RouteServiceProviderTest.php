@@ -47,6 +47,6 @@ class RouteServiceProviderTest extends TestCase
 
         // Check if the routes are callable
         $this->get('/api/test')->assertStatus(200);
-        $this->get('/home')->assertStatus(200);
+        $this->get('/tasks')->assertStatus(200);
     }
 }
