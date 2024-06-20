@@ -25,7 +25,13 @@
 
                 <div class="sm:flex sm:items-center sm:justify-between border-b border-gray-200 py-4 px-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Category:</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:ml-4">{{ $task->category->name }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:ml-4">
+                        @if($task->category)
+                            {{ $task->category->name }}
+                        @else
+                            -
+                        @endif
+                    </dd>
                 </div>
 
                 <div class="sm:flex sm:items-center sm:justify-between border-b border-gray-200 py-4 px-4 sm:px-6">
