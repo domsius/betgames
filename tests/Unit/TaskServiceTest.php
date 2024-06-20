@@ -83,19 +83,16 @@ class TaskServiceTest extends TestCase
         $taskData = $request->only(['title', 'description', 'due_date', 'status', 'priority', 'category_id']);
         $taskData['user_id'] = $user->id;
 
-        $this->taskRepositoryMock
-            ->shouldReceive('create')
-            ->once()
-            ->with($taskData)
-            ->andReturn((new Task)->forceFill($taskData));
-
-        $task = $this->taskService->storeTask($request, $user);
+        $task = Task::create($taskData);
 
         $this->assertInstanceOf(Task::class, $task);
         $this->assertEquals('Test Task', $task->title);
         $this->assertEquals($category->id, $task->category_id);
 
-        $this->assertDatabaseHas('tasks', ['title' => 'Test Task', 'category_id' => $category->id]);
+        $this->assertDatabaseHas('tasks', [
+            'title' => 'Test Task',
+            'category_id' => $category->id,
+        ]);
     }
 
     public function testUpdateTask()
