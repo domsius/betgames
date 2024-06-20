@@ -77,7 +77,11 @@
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->due_date }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->status }}</td>
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $task->category->name }}
+                                    @if($task->category)
+                                        {{ $task->category->name }}
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->priority }}</td>
                                 <td class="pr-4 py-4 whitespace-nowrap text-right text-sm font-medium">
