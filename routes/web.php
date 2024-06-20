@@ -22,4 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
 });
 
+Route::get('/home', function () {
+    return 'Web Home Route';
+})->name('web.home');
+
 require __DIR__.'/auth.php';
