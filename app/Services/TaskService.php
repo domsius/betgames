@@ -36,7 +36,6 @@ class TaskService implements TaskServiceInterface
         $taskData['user_id'] = $user->id;
 
         if ($request->has('category_id')) {
-            Log::info('Category ID present in request', ['category_id' => $request->input('category_id')]);
             $taskData['category_id'] = $request->input('category_id');
         }
 
