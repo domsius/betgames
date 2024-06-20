@@ -27,19 +27,25 @@ docker-compose up --build -d
 docker exec -it laravel-app bash
 composer install
 ```
+## Step 5: Install Node Packages
 
-## Step 5: Generate Application Key
+```sh
+npm i
+npm run build
+```
+
+## Step 6: Generate Application Key
 
 ```sh
 php artisan key:generate
 ```
 
-## Step 6: Run Database Migrations
+## Step 7: Run Database Migrations
 
 ```sh
 php artisan migrate
 ```
 
-## Step 7: Access the Application
+## Step 8: Access the Application
 
 Once the setup is complete, you can access your application at http://localhost
