@@ -16,6 +16,16 @@ class ProfileController extends Controller
     {
         $this->profileService = $profileService;
     }
+    /**
+     * Display the user's profile information.
+     */
+    public function index(Request $request): View
+    {
+
+        return view('profile.index', [
+            'user' => $this->profileService->getUser($request),
+        ]);
+    }
 
     /**
      * Display the user's profile form.

@@ -52,7 +52,11 @@
             </div>
             <div class="mb-4">
                 <label for="priority" class="block text-gray-700 text-sm font-bold mb-2">Priority:</label>
-                <input type="number" name="priority" id="priority" value="{{ old('priority') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('priority') border-red-500 @enderror" required>
+                <select name="priority" id="priority" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('priority') border-red-500 @enderror" required>
+                    <option value="1" {{ old('priority') == 1 ? 'selected' : '' }}>1</option>
+                    <option value="2" {{ old('priority') == 2 ? 'selected' : '' }}>2</option>
+                    <option value="3" {{ old('priority') == 3 ? 'selected' : '' }}>3</option>
+                </select>
                 @error('priority')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
