@@ -5,8 +5,8 @@
 Clone the repository to your local machine:
 
 ```sh
-git clone https://github.com/your-repository.git
-cd your-repository
+git clone https://github.com/domsius/betgames.git
+cd betgames
 ```
 
 ## Step 2: Configure Environment Variables
