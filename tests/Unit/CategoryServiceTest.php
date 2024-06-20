@@ -94,6 +94,25 @@ class CategoryServiceTest extends TestCase
         $this->assertEquals('Updated Category Name', $category->name);
     }
 
+    public function testUnauthorizedUpdateCategory()
+    {
+        $user = User::factory()->create(['id' => 1]);
+        $anotherUser = User::factory()->create(['id' => 2]);
+        $category = Category::factory()->create([
+            'name' => 'Old Category Name',
+            'user_id' => $anotherUser->id,
+        ]);
+
+        $request = new Request([
+            'name' => 'Updated Category Name',
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unauthorized');
+
+        $this->categoryService->updateCategory($request, $category, $user);
+    }
+
     public function testDeleteCategory()
     {
         $user = User::factory()->create();
@@ -111,6 +130,20 @@ class CategoryServiceTest extends TestCase
         $this->categoryService->deleteCategory($category, $user);
 
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+    }
+
+    public function testUnauthorizedDeleteCategory()
+    {
+        $user = User::factory()->create(['id' => 1]);
+        $anotherUser = User::factory()->create(['id' => 2]);
+        $category = Category::factory()->create([
+            'user_id' => $anotherUser->id,
+        ]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Unauthorized');
+
+        $this->categoryService->deleteCategory($category, $user);
     }
 
     protected function tearDown(): void
